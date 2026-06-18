@@ -1,0 +1,51 @@
+{
+  "apiVersion": "kernloom.io/runtime/v1alpha1",
+  "kind": "RuntimeBundle",
+  "metadata": {
+    "node_id": "node-1",
+    "generation": 1,
+    "issued_at": "2026-06-18T12:00:00Z",
+    "expires_at": "2026-06-18T13:00:00Z"
+  },
+  "spec": {
+    "runtime_policy_pack": {
+      "apiVersion": "kernloom.io/runtime/v1alpha1",
+      "kind": "RuntimePolicyPack",
+      "metadata": {
+        "name": "default-runtime-policy"
+      },
+      "spec": {
+        "default_effect": "deny",
+        "rules": [
+          {
+            "id": "risk-high-rate-limit",
+            "when": "risk.level in ['high', 'critical']",
+            "then": {
+              "capability": "enforce.traffic.rate_limit",
+              "level": "soft",
+              "ttl": "10m"
+            }
+          }
+        ]
+      }
+    },
+    "runtime_pdp_profile": {
+      "name": "local-risk-v1",
+      "variables": [
+        {
+          "name": "risk",
+          "required": true,
+          "source": "localrisk"
+        }
+      ]
+    },
+    "enforcement_bounds": {
+      "max_action_during_bootstrap": "observe",
+      "allow_block": false
+    }
+  },
+  "signature": {
+    "algorithm": "",
+    "value": ""
+  }
+}
