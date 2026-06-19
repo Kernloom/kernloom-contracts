@@ -41,3 +41,23 @@ func (d *Duration) UnmarshalJSON(data []byte) error {
 	d.Duration = parsed
 	return nil
 }
+
+func (d Duration) MarshalYAML() (any, error) {
+	if d.Duration == 0 {
+		return "0s", nil
+	}
+	return d.String(), nil
+}
+
+func (d *Duration) UnmarshalYAML(unmarshal func(any) error) error {
+	var s string
+	if err := unmarshal(&s); err != nil {
+		return err
+	}
+	parsed, err := time.ParseDuration(s)
+	if err != nil {
+		return fmt.Errorf("parse duration %q: %w", s, err)
+	}
+	d.Duration = parsed
+	return nil
+}
