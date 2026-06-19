@@ -73,20 +73,20 @@ type RegistryRef struct {
 }
 
 type RegistrySnapshot struct {
-	Ref              RegistryRef                 `json:"ref,omitempty" yaml:"ref,omitempty"`
-	ContextVersion   string                      `json:"context_version,omitempty" yaml:"context_version,omitempty"`
-	ContextKeys      []ContextKeyEntry           `json:"context_keys,omitempty" yaml:"context_keys,omitempty"`
-	RiskLevels       []RiskLevelEntry            `json:"risk_levels,omitempty" yaml:"risk_levels,omitempty"`
-	RiskTaxonomy     RiskTaxonomySnapshot        `json:"risk_taxonomy,omitempty" yaml:"risk_taxonomy,omitempty"`
-	Capabilities     []CapabilityEntry           `json:"capabilities,omitempty" yaml:"capabilities,omitempty"`
-	ActionLevels     []ActionLevelEntry          `json:"action_levels,omitempty" yaml:"action_levels,omitempty"`
-	ActionContracts []RuntimeActionContractEntry `json:"action_contracts,omitempty" yaml:"action_contracts,omitempty"`
-	Signals          []SignalEntry               `json:"signals,omitempty" yaml:"signals,omitempty"`
-	Metrics          []MetricEntry               `json:"metrics,omitempty" yaml:"metrics,omitempty"`
-	LabelPolicies    []LabelPolicyEntry          `json:"label_policies,omitempty" yaml:"label_policies,omitempty"`
-	RetentionClasses []RetentionClassEntry       `json:"retention_classes,omitempty" yaml:"retention_classes,omitempty"`
-	Granularities    []GranularityEntry          `json:"granularities,omitempty" yaml:"granularities,omitempty"`
-	Scopes           ScopeRegistryView           `json:"scopes,omitempty" yaml:"scopes,omitempty"`
+	Ref              RegistryRef                  `json:"ref,omitempty" yaml:"ref,omitempty"`
+	ContextVersion   string                       `json:"context_version,omitempty" yaml:"context_version,omitempty"`
+	ContextKeys      []ContextKeyEntry            `json:"context_keys,omitempty" yaml:"context_keys,omitempty"`
+	RiskLevels       []RiskLevelEntry             `json:"risk_levels,omitempty" yaml:"risk_levels,omitempty"`
+	RiskTaxonomy     RiskTaxonomySnapshot         `json:"risk_taxonomy,omitempty" yaml:"risk_taxonomy,omitempty"`
+	Capabilities     []CapabilityEntry            `json:"capabilities,omitempty" yaml:"capabilities,omitempty"`
+	ActionLevels     []ActionLevelEntry           `json:"action_levels,omitempty" yaml:"action_levels,omitempty"`
+	ActionContracts  []RuntimeActionContractEntry `json:"action_contracts,omitempty" yaml:"action_contracts,omitempty"`
+	Signals          []SignalEntry                `json:"signals,omitempty" yaml:"signals,omitempty"`
+	Metrics          []MetricEntry                `json:"metrics,omitempty" yaml:"metrics,omitempty"`
+	LabelPolicies    []LabelPolicyEntry           `json:"label_policies,omitempty" yaml:"label_policies,omitempty"`
+	RetentionClasses []RetentionClassEntry        `json:"retention_classes,omitempty" yaml:"retention_classes,omitempty"`
+	Granularities    []GranularityEntry           `json:"granularities,omitempty" yaml:"granularities,omitempty"`
+	Scopes           ScopeRegistryView            `json:"scopes,omitempty" yaml:"scopes,omitempty"`
 }
 
 type ContextKeyEntry struct {
@@ -110,8 +110,8 @@ type RiskLevelEntry struct {
 }
 
 type RiskTaxonomySnapshot struct {
-	Scopes                      []string                         `json:"scopes,omitempty" yaml:"scopes,omitempty"`
-	Quality                     map[string]any                   `json:"quality,omitempty" yaml:"quality,omitempty"`
+	Scopes                      []string                        `json:"scopes,omitempty" yaml:"scopes,omitempty"`
+	Quality                     map[string]any                  `json:"quality,omitempty" yaml:"quality,omitempty"`
 	MinimumQualityByActionLevel map[string]RiskQualityThreshold `json:"minimum_quality_by_action_level,omitempty" yaml:"minimumQualityByActionLevel,omitempty"`
 	SourceTypes                 []RiskSourceTypeEntry           `json:"source_types,omitempty" yaml:"sourceTypes,omitempty"`
 }
