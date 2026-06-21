@@ -70,6 +70,65 @@ func TestLocalRiskAssessmentFixtureRoundTrip(t *testing.T) {
 	}
 }
 
+func TestRuntimePolicyPackResponseIRRoundTrip(t *testing.T) {
+	pack := contracts.RuntimePolicyPack{
+		TypeMeta: contracts.TypeMeta{
+			APIVersion: contracts.RuntimeAPIVersion,
+			Kind:       contracts.KindRuntimePolicyPack,
+		},
+		Metadata: contracts.ObjectMeta{Name: "response-pack"},
+		Spec: contracts.RuntimePolicyPackSpec{
+			ResponseRules: []contracts.RuntimeResponseRule{{
+				ID: "denied-access-alert",
+				When: contracts.RuntimeResponseTrigger{
+					Type:        "access.denied_threshold",
+					ResourceRef: "ziti-controller",
+					Threshold:   5,
+					Window:      contracts.NewDuration(15 * time.Minute),
+				},
+				Then: []contracts.RuntimeResponseAction{{
+					ID:       "notify.alert.emit",
+					Route:    "alert-route.security-ops",
+					Severity: "medium",
+					Dedupe:   contracts.NewDuration(15 * time.Minute),
+				}},
+			}},
+			AlertRoutes: []contracts.RuntimeAlertRoute{{
+				ID: "alert-route.security-ops",
+				Audience: contracts.RuntimeAlertAudience{
+					Type: "group",
+					Ref:  "group.kernloom-security-ops",
+				},
+				Channels: []contracts.RuntimeAlertChannel{{
+					Type: "slack",
+					Ref:  "channel.security-ops",
+				}},
+				DefaultSeverity: "medium",
+				Deduplication: contracts.RuntimeAlertDeduplication{
+					Enabled: true,
+					Window:  contracts.NewDuration(15 * time.Minute),
+					Keys:    []string{"resource.id", "detection.id", "source.identity_or_ip"},
+				},
+			}},
+		},
+	}
+
+	raw, err := json.Marshal(pack)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var decoded contracts.RuntimePolicyPack
+	if err := json.Unmarshal(raw, &decoded); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if got := decoded.Spec.ResponseRules[0].Then[0].Route; got != "alert-route.security-ops" {
+		t.Fatalf("route = %q", got)
+	}
+	if got := decoded.Spec.AlertRoutes[0].Deduplication.Window.Duration; got != 15*time.Minute {
+		t.Fatalf("dedupe window = %s", got)
+	}
+}
+
 func sampleRuntimeBundle(now time.Time) contracts.RuntimeBundle {
 	return contracts.RuntimeBundle{
 		TypeMeta: contracts.TypeMeta{
@@ -103,6 +162,33 @@ func sampleRuntimeBundle(now time.Time) contracts.RuntimeBundle {
 							ViolationBehavior: "reject_action",
 							UnknownBehavior:   "reject_hard_action",
 						},
+					}},
+					ResponseRules: []contracts.RuntimeResponseRule{{
+						ID: "denied-access-alert",
+						When: contracts.RuntimeResponseTrigger{
+							Type:        "access.denied_threshold",
+							ResourceRef: "ziti-controller",
+							Threshold:   5,
+							Window:      contracts.NewDuration(15 * time.Minute),
+						},
+						Then: []contracts.RuntimeResponseAction{{
+							ID:       "notify.alert.emit",
+							Route:    "alert-route.security-ops",
+							Severity: "medium",
+							Dedupe:   contracts.NewDuration(15 * time.Minute),
+						}},
+					}},
+					AlertRoutes: []contracts.RuntimeAlertRoute{{
+						ID: "alert-route.security-ops",
+						Audience: contracts.RuntimeAlertAudience{
+							Type: "group",
+							Ref:  "group.kernloom-security-ops",
+						},
+						Channels: []contracts.RuntimeAlertChannel{{
+							Type: "slack",
+							Ref:  "channel.security-ops",
+						}},
+						DefaultSeverity: "medium",
 					}},
 					Rules: []contracts.RuntimePolicyRule{{
 						ID:   "risk-high-rate-limit",

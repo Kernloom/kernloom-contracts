@@ -307,6 +307,8 @@ type RuntimePolicyPackSpec struct {
 	DefaultEffect        string                `json:"default_effect,omitempty" yaml:"default_effect,omitempty"`
 	Rules                []RuntimePolicyRule   `json:"rules,omitempty" yaml:"rules,omitempty"`
 	Guardrails           []RuntimeGuardrail    `json:"guardrails,omitempty" yaml:"guardrails,omitempty"`
+	ResponseRules        []RuntimeResponseRule `json:"response_rules,omitempty" yaml:"response_rules,omitempty"`
+	AlertRoutes          []RuntimeAlertRoute   `json:"alert_routes,omitempty" yaml:"alert_routes,omitempty"`
 	Exports              []RuntimeExportTarget `json:"exports,omitempty" yaml:"exports,omitempty"`
 }
 
@@ -336,6 +338,88 @@ type RuntimeGuardrailAppliesTo struct {
 type RuntimeGuardrailEnforcement struct {
 	ViolationBehavior string `json:"violation_behavior,omitempty" yaml:"violation_behavior,omitempty"`
 	UnknownBehavior   string `json:"unknown_behavior,omitempty" yaml:"unknown_behavior,omitempty"`
+}
+
+// RuntimeResponseRule is a compiled response intent. It is separate from access
+// authorization rules: the trigger describes an observed condition and the
+// actions describe bounded runtime reactions such as alerts, rate limits or
+// case creation.
+type RuntimeResponseRule struct {
+	ID          string                  `json:"id" yaml:"id"`
+	Description string                  `json:"description,omitempty" yaml:"description,omitempty"`
+	When        RuntimeResponseTrigger  `json:"when" yaml:"when"`
+	Then        []RuntimeResponseAction `json:"then" yaml:"then"`
+	ReasonCodes []string                `json:"reason_codes,omitempty" yaml:"reason_codes,omitempty"`
+}
+
+type RuntimeResponseTrigger struct {
+	Type        string         `json:"type" yaml:"type"`
+	ResourceRef string         `json:"resource_ref,omitempty" yaml:"resource_ref,omitempty"`
+	Threshold   int            `json:"threshold,omitempty" yaml:"threshold,omitempty"`
+	Window      Duration       `json:"window,omitempty" yaml:"window,omitempty"`
+	Scope       string         `json:"scope,omitempty" yaml:"scope,omitempty"`
+	Params      map[string]any `json:"params,omitempty" yaml:"params,omitempty"`
+}
+
+type RuntimeResponseAction struct {
+	ID       string                `json:"id" yaml:"id"`
+	Route    string                `json:"route,omitempty" yaml:"route,omitempty"`
+	Severity string                `json:"severity,omitempty" yaml:"severity,omitempty"`
+	Dedupe   Duration              `json:"dedupe,omitempty" yaml:"dedupe,omitempty"`
+	TTL      Duration              `json:"ttl,omitempty" yaml:"ttl,omitempty"`
+	Target   RuntimeResponseTarget `json:"target,omitempty" yaml:"target,omitempty"`
+	Params   map[string]any        `json:"params,omitempty" yaml:"params,omitempty"`
+}
+
+type RuntimeResponseTarget struct {
+	Scope string `json:"scope,omitempty" yaml:"scope,omitempty"`
+	Ref   string `json:"ref,omitempty" yaml:"ref,omitempty"`
+}
+
+// RuntimeAlertRoute defines where alert actions go and how noisy repeated
+// events are deduplicated, acknowledged and escalated.
+type RuntimeAlertRoute struct {
+	ID              string                      `json:"id" yaml:"id"`
+	Audience        RuntimeAlertAudience        `json:"audience,omitempty" yaml:"audience,omitempty"`
+	Channels        []RuntimeAlertChannel       `json:"channels,omitempty" yaml:"channels,omitempty"`
+	DefaultSeverity string                      `json:"default_severity,omitempty" yaml:"default_severity,omitempty"`
+	Deduplication   RuntimeAlertDeduplication   `json:"deduplication,omitempty" yaml:"deduplication,omitempty"`
+	CaseManagement  RuntimeAlertCaseManagement  `json:"case_management,omitempty" yaml:"case_management,omitempty"`
+	Acknowledgement RuntimeAlertAcknowledgement `json:"acknowledgement,omitempty" yaml:"acknowledgement,omitempty"`
+	Meta            map[string]string           `json:"meta,omitempty" yaml:"meta,omitempty"`
+}
+
+type RuntimeAlertAudience struct {
+	Type string `json:"type,omitempty" yaml:"type,omitempty"`
+	Ref  string `json:"ref,omitempty" yaml:"ref,omitempty"`
+}
+
+type RuntimeAlertChannel struct {
+	Type string `json:"type,omitempty" yaml:"type,omitempty"`
+	Ref  string `json:"ref,omitempty" yaml:"ref,omitempty"`
+}
+
+type RuntimeAlertDeduplication struct {
+	Enabled bool     `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Window  Duration `json:"window,omitempty" yaml:"window,omitempty"`
+	Keys    []string `json:"keys,omitempty" yaml:"keys,omitempty"`
+}
+
+type RuntimeAlertCaseManagement struct {
+	CreateCase bool   `json:"create_case,omitempty" yaml:"create_case,omitempty"`
+	System     string `json:"system,omitempty" yaml:"system,omitempty"`
+}
+
+type RuntimeAlertAcknowledgement struct {
+	Required     bool                     `json:"required,omitempty" yaml:"required,omitempty"`
+	Timeout      Duration                 `json:"timeout,omitempty" yaml:"timeout,omitempty"`
+	NoEscalation bool                     `json:"no_escalation,omitempty" yaml:"no_escalation,omitempty"`
+	Escalation   []RuntimeAlertEscalation `json:"escalation,omitempty" yaml:"escalation,omitempty"`
+}
+
+type RuntimeAlertEscalation struct {
+	To  RuntimeAlertAudience `json:"to,omitempty" yaml:"to,omitempty"`
+	Via []string             `json:"via,omitempty" yaml:"via,omitempty"`
 }
 
 type RuntimePolicyRule struct {
