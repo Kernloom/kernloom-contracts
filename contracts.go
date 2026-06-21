@@ -303,13 +303,14 @@ type RuntimePolicyPack struct {
 }
 
 type RuntimePolicyPackSpec struct {
-	CapabilitiesRequired []string              `json:"capabilities_required,omitempty" yaml:"capabilities_required,omitempty"`
-	DefaultEffect        string                `json:"default_effect,omitempty" yaml:"default_effect,omitempty"`
-	Rules                []RuntimePolicyRule   `json:"rules,omitempty" yaml:"rules,omitempty"`
-	Guardrails           []RuntimeGuardrail    `json:"guardrails,omitempty" yaml:"guardrails,omitempty"`
-	ResponseRules        []RuntimeResponseRule `json:"response_rules,omitempty" yaml:"response_rules,omitempty"`
-	AlertRoutes          []RuntimeAlertRoute   `json:"alert_routes,omitempty" yaml:"alert_routes,omitempty"`
-	Exports              []RuntimeExportTarget `json:"exports,omitempty" yaml:"exports,omitempty"`
+	CapabilitiesRequired []string               `json:"capabilities_required,omitempty" yaml:"capabilities_required,omitempty"`
+	DefaultEffect        string                 `json:"default_effect,omitempty" yaml:"default_effect,omitempty"`
+	Rules                []RuntimePolicyRule    `json:"rules,omitempty" yaml:"rules,omitempty"`
+	Guardrails           []RuntimeGuardrail     `json:"guardrails,omitempty" yaml:"guardrails,omitempty"`
+	DetectionRules       []RuntimeDetectionRule `json:"detection_rules,omitempty" yaml:"detection_rules,omitempty"`
+	ResponseRules        []RuntimeResponseRule  `json:"response_rules,omitempty" yaml:"response_rules,omitempty"`
+	AlertRoutes          []RuntimeAlertRoute    `json:"alert_routes,omitempty" yaml:"alert_routes,omitempty"`
+	Exports              []RuntimeExportTarget  `json:"exports,omitempty" yaml:"exports,omitempty"`
 }
 
 // RuntimeGuardrail is a compiled safety invariant that KLIQ must evaluate
@@ -340,6 +341,27 @@ type RuntimeGuardrailEnforcement struct {
 	UnknownBehavior   string `json:"unknown_behavior,omitempty" yaml:"unknown_behavior,omitempty"`
 }
 
+// RuntimeDetectionRule is a compiled stateful observation intent. It records
+// what KLIQ should detect; response rules can reference detections by ID.
+type RuntimeDetectionRule struct {
+	ID          string                  `json:"id" yaml:"id"`
+	Description string                  `json:"description,omitempty" yaml:"description,omitempty"`
+	Type        string                  `json:"type" yaml:"type"`
+	Subject     RuntimeDetectionSubject `json:"subject,omitempty" yaml:"subject,omitempty"`
+	ResourceRef string                  `json:"resource_ref,omitempty" yaml:"resource_ref,omitempty"`
+	Threshold   int                     `json:"threshold,omitempty" yaml:"threshold,omitempty"`
+	Window      Duration                `json:"window,omitempty" yaml:"window,omitempty"`
+	Scope       string                  `json:"scope,omitempty" yaml:"scope,omitempty"`
+	Params      map[string]any          `json:"params,omitempty" yaml:"params,omitempty"`
+	ReasonCodes []string                `json:"reason_codes,omitempty" yaml:"reason_codes,omitempty"`
+}
+
+type RuntimeDetectionSubject struct {
+	Type     string `json:"type,omitempty" yaml:"type,omitempty"`
+	Ref      string `json:"ref,omitempty" yaml:"ref,omitempty"`
+	Selector string `json:"selector,omitempty" yaml:"selector,omitempty"`
+}
+
 // RuntimeResponseRule is a compiled response intent. It is separate from access
 // authorization rules: the trigger describes an observed condition and the
 // actions describe bounded runtime reactions such as alerts, rate limits or
@@ -353,7 +375,8 @@ type RuntimeResponseRule struct {
 }
 
 type RuntimeResponseTrigger struct {
-	Type        string         `json:"type" yaml:"type"`
+	Type        string         `json:"type,omitempty" yaml:"type,omitempty"`
+	Detection   string         `json:"detection,omitempty" yaml:"detection,omitempty"`
 	ResourceRef string         `json:"resource_ref,omitempty" yaml:"resource_ref,omitempty"`
 	Threshold   int            `json:"threshold,omitempty" yaml:"threshold,omitempty"`
 	Window      Duration       `json:"window,omitempty" yaml:"window,omitempty"`

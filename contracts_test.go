@@ -78,13 +78,22 @@ func TestRuntimePolicyPackResponseIRRoundTrip(t *testing.T) {
 		},
 		Metadata: contracts.ObjectMeta{Name: "response-pack"},
 		Spec: contracts.RuntimePolicyPackSpec{
+			DetectionRules: []contracts.RuntimeDetectionRule{{
+				ID:          "admin-deny",
+				Type:        "access.denied_threshold",
+				ResourceRef: "ziti-controller",
+				Subject: contracts.RuntimeDetectionSubject{
+					Type: "group",
+					Ref:  "kernloom-admins",
+				},
+				Threshold: 5,
+				Window:    contracts.NewDuration(15 * time.Minute),
+				Scope:     "source",
+			}},
 			ResponseRules: []contracts.RuntimeResponseRule{{
 				ID: "denied-access-alert",
 				When: contracts.RuntimeResponseTrigger{
-					Type:        "access.denied_threshold",
-					ResourceRef: "ziti-controller",
-					Threshold:   5,
-					Window:      contracts.NewDuration(15 * time.Minute),
+					Detection: "admin-deny",
 				},
 				Then: []contracts.RuntimeResponseAction{{
 					ID:       "notify.alert.emit",
@@ -123,6 +132,12 @@ func TestRuntimePolicyPackResponseIRRoundTrip(t *testing.T) {
 	}
 	if got := decoded.Spec.ResponseRules[0].Then[0].Route; got != "alert-route.security-ops" {
 		t.Fatalf("route = %q", got)
+	}
+	if got := decoded.Spec.ResponseRules[0].When.Detection; got != "admin-deny" {
+		t.Fatalf("response detection = %q", got)
+	}
+	if got := decoded.Spec.DetectionRules[0].Subject.Ref; got != "kernloom-admins" {
+		t.Fatalf("detection subject = %q", got)
 	}
 	if got := decoded.Spec.AlertRoutes[0].Deduplication.Window.Duration; got != 15*time.Minute {
 		t.Fatalf("dedupe window = %s", got)
@@ -163,13 +178,22 @@ func sampleRuntimeBundle(now time.Time) contracts.RuntimeBundle {
 							UnknownBehavior:   "reject_hard_action",
 						},
 					}},
+					DetectionRules: []contracts.RuntimeDetectionRule{{
+						ID:          "admin-deny",
+						Type:        "access.denied_threshold",
+						ResourceRef: "ziti-controller",
+						Subject: contracts.RuntimeDetectionSubject{
+							Type: "group",
+							Ref:  "kernloom-admins",
+						},
+						Threshold: 5,
+						Window:    contracts.NewDuration(15 * time.Minute),
+						Scope:     "source",
+					}},
 					ResponseRules: []contracts.RuntimeResponseRule{{
 						ID: "denied-access-alert",
 						When: contracts.RuntimeResponseTrigger{
-							Type:        "access.denied_threshold",
-							ResourceRef: "ziti-controller",
-							Threshold:   5,
-							Window:      contracts.NewDuration(15 * time.Minute),
+							Detection: "admin-deny",
 						},
 						Then: []contracts.RuntimeResponseAction{{
 							ID:       "notify.alert.emit",
