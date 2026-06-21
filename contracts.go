@@ -306,7 +306,36 @@ type RuntimePolicyPackSpec struct {
 	CapabilitiesRequired []string              `json:"capabilities_required,omitempty" yaml:"capabilities_required,omitempty"`
 	DefaultEffect        string                `json:"default_effect,omitempty" yaml:"default_effect,omitempty"`
 	Rules                []RuntimePolicyRule   `json:"rules,omitempty" yaml:"rules,omitempty"`
+	Guardrails           []RuntimeGuardrail    `json:"guardrails,omitempty" yaml:"guardrails,omitempty"`
 	Exports              []RuntimeExportTarget `json:"exports,omitempty" yaml:"exports,omitempty"`
+}
+
+// RuntimeGuardrail is a compiled safety invariant that KLIQ must evaluate
+// before executing a runtime action. Guardrails are deliberately small and
+// runtime-focused; richer authored GuardrailPolicy objects are compiled by
+// Forge into this executable shape.
+type RuntimeGuardrail struct {
+	ID               string                      `json:"id" yaml:"id"`
+	Type             string                      `json:"type" yaml:"type"`
+	Subject          RuntimeGuardrailSubject     `json:"subject,omitempty" yaml:"subject,omitempty"`
+	ForbiddenActions []string                    `json:"forbidden_actions,omitempty" yaml:"forbidden_actions,omitempty"`
+	AppliesTo        RuntimeGuardrailAppliesTo   `json:"applies_to,omitempty" yaml:"applies_to,omitempty"`
+	Enforcement      RuntimeGuardrailEnforcement `json:"enforcement,omitempty" yaml:"enforcement,omitempty"`
+	ReasonCodes      []string                    `json:"reason_codes,omitempty" yaml:"reason_codes,omitempty"`
+}
+
+type RuntimeGuardrailSubject struct {
+	Type string `json:"type,omitempty" yaml:"type,omitempty"`
+	Ref  string `json:"ref,omitempty" yaml:"ref,omitempty"`
+}
+
+type RuntimeGuardrailAppliesTo struct {
+	Resources []string `json:"resources,omitempty" yaml:"resources,omitempty"`
+}
+
+type RuntimeGuardrailEnforcement struct {
+	ViolationBehavior string `json:"violation_behavior,omitempty" yaml:"violation_behavior,omitempty"`
+	UnknownBehavior   string `json:"unknown_behavior,omitempty" yaml:"unknown_behavior,omitempty"`
 }
 
 type RuntimePolicyRule struct {

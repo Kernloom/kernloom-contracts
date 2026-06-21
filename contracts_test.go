@@ -91,6 +91,19 @@ func sampleRuntimeBundle(now time.Time) contracts.RuntimeBundle {
 				Metadata: contracts.ObjectMeta{Name: "default-runtime-policy"},
 				Spec: contracts.RuntimePolicyPackSpec{
 					DefaultEffect: "deny",
+					Guardrails: []contracts.RuntimeGuardrail{{
+						ID:   "never-auto-block-admins",
+						Type: "never",
+						Subject: contracts.RuntimeGuardrailSubject{
+							Type: "group",
+							Ref:  "kernloom-admins",
+						},
+						ForbiddenActions: []string{"enforce.access.deny"},
+						Enforcement: contracts.RuntimeGuardrailEnforcement{
+							ViolationBehavior: "reject_action",
+							UnknownBehavior:   "reject_hard_action",
+						},
+					}},
 					Rules: []contracts.RuntimePolicyRule{{
 						ID:   "risk-high-rate-limit",
 						When: "risk.level in ['high', 'critical']",
