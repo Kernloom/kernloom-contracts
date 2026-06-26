@@ -475,6 +475,7 @@ type RuntimePolicyPackSpec struct {
 	CapabilitiesRequired []string                      `json:"capabilities_required,omitempty" yaml:"capabilities_required,omitempty"`
 	DefaultEffect        string                        `json:"default_effect,omitempty" yaml:"default_effect,omitempty"`
 	AutonomyLifecycle    *RuntimeAutonomyLifecycleSpec `json:"autonomy_lifecycle,omitempty" yaml:"autonomy_lifecycle,omitempty"`
+	AccessPolicies       []RuntimeAccessPolicy         `json:"access_policies,omitempty" yaml:"access_policies,omitempty"`
 	Rules                []RuntimePolicyRule           `json:"rules,omitempty" yaml:"rules,omitempty"`
 	Guardrails           []RuntimeGuardrail            `json:"guardrails,omitempty" yaml:"guardrails,omitempty"`
 	DetectionRules       []RuntimeDetectionRule        `json:"detection_rules,omitempty" yaml:"detection_rules,omitempty"`
@@ -482,6 +483,42 @@ type RuntimePolicyPackSpec struct {
 	AlertRoutes          []RuntimeAlertRoute           `json:"alert_routes,omitempty" yaml:"alert_routes,omitempty"`
 	GapMetadata          []RuntimeGapMetadata          `json:"gap_metadata,omitempty" yaml:"gap_metadata,omitempty"`
 	Exports              []RuntimeExportTarget         `json:"exports,omitempty" yaml:"exports,omitempty"`
+}
+
+// RuntimeAccessPolicy is the adapter-neutral desired access state that KLIQ
+// can hand to AccessPolicyPEPs. It carries authored AccessPolicy intent without
+// pretending every runtime adapter can natively enforce app/identity policy.
+type RuntimeAccessPolicy struct {
+	ID            string                   `json:"id" yaml:"id"`
+	Description   string                   `json:"description,omitempty" yaml:"description,omitempty"`
+	Subject       RuntimeAccessSubject     `json:"subject" yaml:"subject"`
+	Action        string                   `json:"action" yaml:"action"`
+	Resource      RuntimeAccessResource    `json:"resource" yaml:"resource"`
+	Requirements  []string                 `json:"requirements,omitempty" yaml:"requirements,omitempty"`
+	Conditions    []RuntimeAccessCondition `json:"conditions,omitempty" yaml:"conditions,omitempty"`
+	Effect        string                   `json:"effect" yaml:"effect"`
+	DefaultEffect string                   `json:"default_effect,omitempty" yaml:"default_effect,omitempty"`
+	Source        string                   `json:"source,omitempty" yaml:"source,omitempty"`
+	ReasonCodes   []string                 `json:"reason_codes,omitempty" yaml:"reason_codes,omitempty"`
+}
+
+type RuntimeAccessSubject struct {
+	Type string `json:"type" yaml:"type"`
+	Ref  string `json:"ref,omitempty" yaml:"ref,omitempty"`
+}
+
+type RuntimeAccessResource struct {
+	Type string `json:"type" yaml:"type"`
+	Ref  string `json:"ref,omitempty" yaml:"ref,omitempty"`
+}
+
+type RuntimeAccessCondition struct {
+	ID       string `json:"id" yaml:"id"`
+	Type     string `json:"type,omitempty" yaml:"type,omitempty"`
+	Signal   string `json:"signal,omitempty" yaml:"signal,omitempty"`
+	Operator string `json:"operator,omitempty" yaml:"operator,omitempty"`
+	Value    any    `json:"value,omitempty" yaml:"value,omitempty"`
+	CEL      string `json:"cel,omitempty" yaml:"cel,omitempty"`
 }
 
 // RuntimeAutonomyLifecycleSpec contains bounded autonomy behavior that KLIQ can

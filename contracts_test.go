@@ -78,6 +78,28 @@ func TestRuntimePolicyPackResponseIRRoundTrip(t *testing.T) {
 		},
 		Metadata: contracts.ObjectMeta{Name: "response-pack"},
 		Spec: contracts.RuntimePolicyPackSpec{
+			AccessPolicies: []contracts.RuntimeAccessPolicy{{
+				ID: "ziti-controller-admin-access",
+				Subject: contracts.RuntimeAccessSubject{
+					Type: "group",
+					Ref:  "kernloom-admins",
+				},
+				Action: "access",
+				Resource: contracts.RuntimeAccessResource{
+					Type: "application",
+					Ref:  "ziti-controller",
+				},
+				Conditions: []contracts.RuntimeAccessCondition{{
+					ID:       "require-mfa",
+					Type:     "authentication_strength",
+					Signal:   "session.authentication.strength",
+					Operator: "in",
+					Value:    []any{"mfa", "phishing_resistant_mfa"},
+				}},
+				Effect:        "allow",
+				DefaultEffect: "deny",
+				Source:        "protect-ziti-controller-admin-access",
+			}},
 			DetectionRules: []contracts.RuntimeDetectionRule{{
 				ID:          "admin-deny",
 				Type:        "access.denied_threshold",
@@ -141,6 +163,16 @@ func TestRuntimePolicyPackResponseIRRoundTrip(t *testing.T) {
 	}
 	if got := decoded.Spec.AlertRoutes[0].Deduplication.Window.Duration; got != 15*time.Minute {
 		t.Fatalf("dedupe window = %s", got)
+	}
+	if len(decoded.Spec.AccessPolicies) != 1 {
+		t.Fatalf("access policies = %d, want 1", len(decoded.Spec.AccessPolicies))
+	}
+	access := decoded.Spec.AccessPolicies[0]
+	if access.Subject.Ref != "kernloom-admins" || access.Resource.Ref != "ziti-controller" || access.Effect != "allow" {
+		t.Fatalf("access policy not preserved: %#v", access)
+	}
+	if len(access.Conditions) != 1 || access.Conditions[0].Signal != "session.authentication.strength" {
+		t.Fatalf("access conditions not preserved: %#v", access.Conditions)
 	}
 }
 
